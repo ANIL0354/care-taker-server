@@ -1,0 +1,62 @@
+CREATE TABLE users (
+    id BIGINT NOT NULL AUTO_INCREMENT,
+    name VARCHAR(100) NOT NULL,
+    email VARCHAR(255) NOT NULL,
+    phone VARCHAR(15) NOT NULL,
+    password VARCHAR(255) NOT NULL,
+    role VARCHAR(20) NOT NULL,
+    PRIMARY KEY (id),
+    CONSTRAINT uk_users_email UNIQUE (email),
+    CONSTRAINT chk_users_role CHECK (role IN ('CARETAKER', 'ADMIN'))
+);
+
+CREATE TABLE hospitals (
+    id BIGINT NOT NULL AUTO_INCREMENT,
+    name VARCHAR(150) NOT NULL,
+    address VARCHAR(255) NOT NULL,
+    city VARCHAR(100) NOT NULL,
+    PRIMARY KEY (id)
+);
+
+CREATE TABLE time_slots (
+    id BIGINT NOT NULL AUTO_INCREMENT,
+    slot_start DATETIME NOT NULL,
+    slot_end DATETIME NOT NULL,
+    capacity INT NOT NULL,
+    booked_count INT NOT NULL DEFAULT 0,
+    PRIMARY KEY (id),
+    CONSTRAINT uk_time_slots_start UNIQUE (slot_start),
+    CONSTRAINT chk_time_slots_capacity CHECK (capacity >= 0 AND booked_count >= 0)
+);
+
+CREATE TABLE bookings (
+    id BIGINT NOT NULL AUTO_INCREMENT,
+    caretaker_id BIGINT NOT NULL,
+    hospital_id BIGINT NOT NULL,
+    patient_name VARCHAR(100) NOT NULL,
+    patient_phone VARCHAR(15) NOT NULL,
+    home_address VARCHAR(255) NOT NULL,
+    mobility_need VARCHAR(20) NOT NULL,
+    notes VARCHAR(500),
+    status VARCHAR(20) NOT NULL,
+    created_at DATETIME NOT NULL,
+    PRIMARY KEY (id),
+    CONSTRAINT fk_bookings_caretaker FOREIGN KEY (caretaker_id) REFERENCES users(id),
+    CONSTRAINT fk_bookings_hospital FOREIGN KEY (hospital_id) REFERENCES hospitals(id),
+    CONSTRAINT chk_bookings_mobility CHECK (mobility_need IN ('WALKING', 'WHEELCHAIR', 'STRETCHER')),
+    CONSTRAINT chk_bookings_status CHECK (status IN ('CONFIRMED'))
+);
+
+CREATE TABLE rides (
+    id BIGINT NOT NULL AUTO_INCREMENT,
+    booking_id BIGINT NOT NULL,
+    direction VARCHAR(30) NOT NULL,
+    slot_id BIGINT NOT NULL,
+    status VARCHAR(20) NOT NULL,
+    PRIMARY KEY (id),
+    CONSTRAINT uk_rides_booking_direction UNIQUE (booking_id, direction),
+    CONSTRAINT fk_rides_booking FOREIGN KEY (booking_id) REFERENCES bookings(id),
+    CONSTRAINT fk_rides_slot FOREIGN KEY (slot_id) REFERENCES time_slots(id),
+    CONSTRAINT chk_rides_direction CHECK (direction IN ('HOME_TO_HOSPITAL', 'HOSPITAL_TO_HOME')),
+    CONSTRAINT chk_rides_status CHECK (status IN ('CONFIRMED'))
+);
