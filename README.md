@@ -55,6 +55,11 @@ for the next 14 days with capacity 3. Hibernate uses `ddl-auto: validate`.
 The migrations are PostgreSQL-specific; if the target database already has a
 Flyway history from MySQL, use a fresh database or repair that history.
 
+## Health check
+
+`GET http://localhost:8080/actuator/health` is public and reports app/database status.
+`GET http://localhost:8080/actuator/info` is public and reports basic app info.
+
 ## Run with Docker Compose
 
 ```bash
