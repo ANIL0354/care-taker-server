@@ -16,7 +16,8 @@ No cancel, reschedule, payments, driver app, tracking, or notifications.
 
 - JDK 17
 - Maven (or the included `./mvnw` wrapper)
-- MySQL 8, or Docker with Compose
+- PostgreSQL database (the Neon pooled connection is configured by default)
+- Docker with Compose (optional)
 
 ## Environment variables
 
@@ -24,20 +25,19 @@ No cancel, reschedule, payments, driver app, tracking, or notifications.
 |---|---|---|
 | `JWT_SECRET` | production yes, dev optional | `openssl rand -base64 48` (must decode to at least 32 bytes) |
 | `JWT_EXPIRATION_MS` | no | `3600000` |
-| `DB_URL` | no | `jdbc:mysql://localhost:3306/care_ride?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC` |
-| `DB_USERNAME` | no | `root` |
-| `DB_PASSWORD` | no | `mypassword` |
+| `DB_URL` | no | Neon JDBC URL without `user` or `password` parameters |
+| `DB_USERNAME` | no | `neondb_owner` |
+| `DB_PASSWORD` | yes | set it in your shell, never in source control |
 
 If `JWT_SECRET` is not set, the app logs a warning and uses an ephemeral key: it starts, but tokens stop working after a restart. Always set it in production. In IntelliJ, add `JWT_SECRET` under Run → Edit Configurations → Environment variables.
 
-A running MySQL 8 instance is still required; use `docker compose up -d mysql` if needed.
+Set the database credentials through `DB_USERNAME` / `DB_PASSWORD`; do not put `user=` or `password=` in `DB_URL`.
 
 ## Run locally
 
 ```bash
 export JWT_SECRET=$(openssl rand -base64 48)
-export DB_USERNAME=root
-export DB_PASSWORD=mypassword
+read -s -p "Neon DB password: " DB_PASSWORD; export DB_PASSWORD
 
 ./mvnw spring-boot:run
 ```
@@ -52,16 +52,19 @@ java -jar target/care-ride-0.0.1-SNAPSHOT.jar
 Flyway applies `V1__init.sql` and `V2__seed.sql`: three hospitals, one admin
 (`admin@careride.com` / `Admin@123`), and 30-minute slots from 06:00 to 20:00
 for the next 14 days with capacity 3. Hibernate uses `ddl-auto: validate`.
+The migrations are PostgreSQL-specific; if the target database already has a
+Flyway history from MySQL, use a fresh database or repair that history.
 
 ## Run with Docker Compose
 
 ```bash
 export JWT_SECRET=$(openssl rand -base64 48)
+read -s -p "Neon DB password: " DB_PASSWORD; export DB_PASSWORD
 ./mvnw clean package
 docker compose up --build
 ```
 
-Compose starts MySQL 8 and the app on port `8080`.
+Compose starts the app on port `8080` and connects it to the configured Neon database.
 
 ## API examples
 

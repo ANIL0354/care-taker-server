@@ -18,9 +18,12 @@ window_numbers AS (
     SELECT window_offset + 1 FROM window_numbers WHERE window_offset < 27
 )
 INSERT INTO time_slots (slot_start, slot_end, capacity, booked_count)
-SELECT DATE_ADD(DATE_ADD(CURDATE(), INTERVAL day_offset DAY), INTERVAL (360 + window_offset * 30) MINUTE),
-       DATE_ADD(DATE_ADD(CURDATE(), INTERVAL day_offset DAY), INTERVAL (390 + window_offset * 30) MINUTE),
+SELECT CURRENT_DATE + day_offset * INTERVAL '1 day' + (360 + window_offset * 30) * INTERVAL '1 minute',
+       CURRENT_DATE + day_offset * INTERVAL '1 day' + (390 + window_offset * 30) * INTERVAL '1 minute',
        3,
        0
 FROM day_numbers
 CROSS JOIN window_numbers;
+
+SELECT setval(pg_get_serial_sequence('users', 'id'), (SELECT MAX(id) FROM users));
+SELECT setval(pg_get_serial_sequence('hospitals', 'id'), (SELECT MAX(id) FROM hospitals));

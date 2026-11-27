@@ -1,34 +1,12 @@
 services:
-  mysql:
-    image: mysql:8.0
-    container_name: careride-mysql
-    environment:
-      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-root}
-      MYSQL_DATABASE: care_ride
-    ports:
-      - "3306:3306"
-    volumes:
-      - careride-mysql-data:/var/lib/mysql
-    healthcheck:
-      test: ["CMD-SHELL", "mysqladmin ping -h localhost -p$$MYSQL_ROOT_PASSWORD"]
-      interval: 5s
-      timeout: 5s
-      retries: 20
-
   app:
     build: .
     container_name: careride-app
-    depends_on:
-      mysql:
-        condition: service_healthy
     environment:
-      DB_URL: jdbc:mysql://mysql:3306/care_ride?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
-      DB_USERNAME: root
-      DB_PASSWORD: ${DB_PASSWORD:-root}
-      JWT_SECRET: ${JWT_SECRET}
-      JWT_EXPIRATION_MS: ${JWT_EXPIRATION_MS:-3600000}
+      DB_URL: "${DB_URL:-jdbc:postgresql://ep-small-sunset-biow9eic-pooler.c-5.ap-southeast-1.aws.neon.tech/neondb?sslmode=require&channelBinding=require}"
+      DB_USERNAME: "${DB_USERNAME:-neondb_owner}"
+      DB_PASSWORD: "${DB_PASSWORD}"
+      JWT_SECRET: "${JWT_SECRET}"
+      JWT_EXPIRATION_MS: "${JWT_EXPIRATION_MS:-3600000}"
     ports:
       - "8080:8080"
-
-volumes:
-  careride-mysql-data:
