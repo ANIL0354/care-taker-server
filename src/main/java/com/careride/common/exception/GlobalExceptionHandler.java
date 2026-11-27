@@ -3,6 +3,7 @@ package com.careride.common.exception;
 import com.careride.common.exception.dto.ErrorResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.validation.FieldError;
@@ -25,14 +26,16 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler({MethodArgumentNotValidException.class, IllegalArgumentException.class,
-            MethodArgumentTypeMismatchException.class})
+            MethodArgumentTypeMismatchException.class, HttpMessageNotReadableException.class})
     public ResponseEntity<ErrorResponse> handleBadRequest(Exception ex) {
         String message = ex instanceof MethodArgumentNotValidException validationException
                 ? validationException.getBindingResult().getFieldErrors().stream()
                         .findFirst()
                         .map(FieldError::getDefaultMessage)
                         .orElse("Validation failed")
-                : ex.getMessage();
+                : ex instanceof HttpMessageNotReadableException
+                        ? "Request body is required"
+                        : ex.getMessage();
         return build(HttpStatus.BAD_REQUEST, message);
     }
 
