@@ -60,6 +60,12 @@ Flyway history from MySQL, use a fresh database or repair that history.
 `GET http://localhost:8080/actuator/health` is public and reports app/database status.
 `GET http://localhost:8080/actuator/info` is public and reports basic app info.
 
+## API docs
+
+Swagger UI: `http://localhost:8080/swagger-ui/index.html`
+OpenAPI JSON: `http://localhost:8080/v3/api-docs`
+Public endpoints include auth, actuator health/info, and Swagger. For protected APIs, click **Authorize** and enter `Bearer <jwt-token>`.
+
 ## Run with Docker Compose
 
 ```bash
